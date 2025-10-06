@@ -41,9 +41,16 @@ MIN: '-';
 MUL: '*';
 ASSIGNMENT_OPERATOR: ':=';
 
-
-
-
 //--- PARSER: ---
-stylesheet: EOF;
+stylesheet: var* stylerule* EOF;
+var: CAPITAL_IDENT ASSIGNMENT_OPERATOR expr SEMICOLON;
+stylerule: (CLASS_IDENT | ID_IDENT | LOWER_IDENT) OPEN_BRACE style* CLOSE_BRACE;
+style: ('background-color' COLON expr SEMICOLON
+      | 'width' COLON expr SEMICOLON
+      | 'color' COLON expr SEMICOLON);
+expr: COLOR | PIXELSIZE | PERCENTAGE | CAPITAL_IDENT | TRUE | FALSE;
+
+
+
+
 
