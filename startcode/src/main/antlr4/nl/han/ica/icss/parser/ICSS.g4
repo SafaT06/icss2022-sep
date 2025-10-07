@@ -42,13 +42,15 @@ MUL: '*';
 ASSIGNMENT_OPERATOR: ':=';
 
 //--- PARSER: ---
-stylesheet: var* stylerule* EOF;
-var: CAPITAL_IDENT ASSIGNMENT_OPERATOR expr SEMICOLON;
-stylerule: (CLASS_IDENT | ID_IDENT | LOWER_IDENT) OPEN_BRACE style* CLOSE_BRACE;
-style: ('background-color' COLON expr SEMICOLON
-      | 'width' COLON expr SEMICOLON
-      | 'color' COLON expr SEMICOLON);
-expr: COLOR | PIXELSIZE | PERCENTAGE | CAPITAL_IDENT | TRUE | FALSE;
+stylesheet: variableassignment* stylerule* EOF;
+variableassignment: CAPITAL_IDENT ASSIGNMENT_OPERATOR expr SEMICOLON;
+stylerule: idselector OPEN_BRACE property* CLOSE_BRACE;
+idselector: (CLASS_IDENT | ID_IDENT | LOWER_IDENT);
+property: ('background-color' COLON expr SEMICOLON
+      | 'width' COLON mathexpr SEMICOLON
+      | 'color' COLON mathexpr SEMICOLON);
+mathexpr: expr ((PLUS | MIN | MUL) expr)*;
+expr: COLOR | PIXELSIZE | PERCENTAGE | CAPITAL_IDENT | TRUE | FALSE | SCALAR;
 
 
 
