@@ -4,15 +4,20 @@ import com.google.errorprone.annotations.Var;
 import java.util.Stack;
 import nl.han.ica.icss.ast.AST;
 import nl.han.ica.icss.ast.ASTNode;
+import nl.han.ica.icss.ast.Declaration;
+import nl.han.ica.icss.ast.Literal;
 import nl.han.ica.icss.ast.PropertyName;
 import nl.han.ica.icss.ast.Stylerule;
 import nl.han.ica.icss.ast.Stylesheet;
 import nl.han.ica.icss.ast.VariableAssignment;
 import nl.han.ica.icss.ast.selectors.IdSelector;
+import nl.han.ica.icss.parser.ICSSParser.DeclarationContext;
 import nl.han.ica.icss.parser.ICSSParser.ExprContext;
 import nl.han.ica.icss.parser.ICSSParser.IdselectorContext;
+import nl.han.ica.icss.parser.ICSSParser.LiteralContext;
 import nl.han.ica.icss.parser.ICSSParser.MathexprContext;
 import nl.han.ica.icss.parser.ICSSParser.PropertyContext;
+import nl.han.ica.icss.parser.ICSSParser.StatementContext;
 import nl.han.ica.icss.parser.ICSSParser.StyleruleContext;
 import nl.han.ica.icss.parser.ICSSParser.StylesheetContext;
 import nl.han.ica.icss.parser.ICSSParser.VariableassignmentContext;
@@ -55,7 +60,7 @@ public class ASTListener extends ICSSBaseListener {
   @Override
   public void enterVariableassignment(VariableassignmentContext ctx) {
     VariableAssignment variableAssignment = new VariableAssignment();
-    currentContainer.peek().addChild(variableAssignment);
+    currentContainer.push(variableAssignment);
   }
 
   @Override
@@ -79,36 +84,25 @@ public class ASTListener extends ICSSBaseListener {
   @Override
   public void enterIdselector(IdselectorContext ctx) {
     IdSelector idSelector = new IdSelector(ctx.getText());
-    currentContainer.peek().addChild(idSelector);
+    currentContainer.push(idSelector);
   }
 
   @Override
   public void exitIdselector(IdselectorContext ctx) {
-//    IdSelector idSelector = (IdSelector) currentContainer.pop();
-//    currentContainer.peek().addChild(idSelector);
+    IdSelector idSelector = (IdSelector) currentContainer.pop();
+    currentContainer.peek().addChild(idSelector);
   }
 
   @Override
   public void enterProperty(PropertyContext ctx) {
-    PropertyName propertyName = new PropertyName();
-    currentContainer.peek().addChild(propertyName);
+    PropertyName propertyName = new PropertyName(ctx.getText());
+    currentContainer.push(propertyName);
   }
 
   @Override
   public void exitProperty(PropertyContext ctx) {
-//  PropertyName propertyName = (PropertyName) currentContainer.pop();
-//  currentContainer.peek().addChild(propertyName);
-  }
-
-  @Override
-  public void enterExpr(ExprContext ctx) {
-
-
-  }
-
-  @Override
-  public void exitExpr(ExprContext ctx) {
-
+  PropertyName propertyName = (PropertyName) currentContainer.pop();
+  currentContainer.peek().addChild(propertyName);
   }
 
   @Override
@@ -118,6 +112,44 @@ public class ASTListener extends ICSSBaseListener {
 
   @Override
   public void exitMathexpr(MathexprContext ctx) {
+  }
+
+  @Override
+  public void enterLiteral(LiteralContext ctx) {
+  }
+
+  @Override
+  public void exitLiteral(LiteralContext ctx) {
+  }
+
+  @Override
+  public void enterDeclaration(DeclarationContext ctx) {
+    Declaration declaration = new Declaration();
+    currentContainer.push(declaration);
+  }
+
+  @Override
+  public void exitDeclaration(DeclarationContext ctx) {
+    Declaration declaration = (Declaration) currentContainer.pop();
+    currentContainer.peek().addChild(declaration);
+  }
+
+  @Override
+  public void enterStatement(StatementContext ctx) {
+  }
+
+  @Override
+  public void exitStatement(StatementContext ctx) {
 
   }
+
+  @Override
+  public void enterExpr(ExprContext ctx) {
+
+  }
+
+  @Override
+  public void exitExpr(ExprContext ctx) {
+  }
+
 }
