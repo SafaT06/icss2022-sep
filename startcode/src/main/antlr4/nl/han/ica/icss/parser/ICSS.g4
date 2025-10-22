@@ -55,7 +55,7 @@ literal: COLOR #colorLiteral
   | TRUE #boolLiteral
   | FALSE #boolLiteral
   | SCALAR #scalarLiteral
-  | CAPITAL_IDENT #varLiteral
+  | CAPITAL_IDENT #variableReference
   ;
 
 
