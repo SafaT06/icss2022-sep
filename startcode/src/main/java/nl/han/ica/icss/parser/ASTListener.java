@@ -13,11 +13,15 @@ import nl.han.ica.icss.ast.literals.BoolLiteral;
 import nl.han.ica.icss.ast.literals.ColorLiteral;
 import nl.han.ica.icss.ast.literals.PixelLiteral;
 import nl.han.ica.icss.ast.literals.ScalarLiteral;
+import nl.han.ica.icss.ast.operations.AddOperation;
+import nl.han.ica.icss.ast.operations.MultiplyOperation;
+import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.ast.selectors.IdSelector;
+import nl.han.ica.icss.parser.ICSSParser.AddExprContext;
 import nl.han.ica.icss.parser.ICSSParser.BoolLiteralContext;
 import nl.han.ica.icss.parser.ICSSParser.ColorLiteralContext;
 import nl.han.ica.icss.parser.ICSSParser.DeclarationContext;
-import nl.han.ica.icss.parser.ICSSParser.ExprContext;
+import nl.han.ica.icss.parser.ICSSParser.MulExprContext;
 import nl.han.ica.icss.parser.ICSSParser.PercentageLiteralContext;
 import nl.han.ica.icss.parser.ICSSParser.PixelLiteralContext;
 import nl.han.ica.icss.parser.ICSSParser.PropertyContext;
@@ -25,6 +29,7 @@ import nl.han.ica.icss.parser.ICSSParser.ScalarLiteralContext;
 import nl.han.ica.icss.parser.ICSSParser.SelectorContext;
 import nl.han.ica.icss.parser.ICSSParser.StyleruleContext;
 import nl.han.ica.icss.parser.ICSSParser.StylesheetContext;
+import nl.han.ica.icss.parser.ICSSParser.SubtrExprContext;
 import nl.han.ica.icss.parser.ICSSParser.VariableReferenceContext;
 import nl.han.ica.icss.parser.ICSSParser.VariableassignmentContext;
 
@@ -127,12 +132,41 @@ public class ASTListener extends ICSSBaseListener {
   }
 
   @Override
-  public void enterExpr(ExprContext ctx) {
+  public void enterMulExpr(MulExprContext ctx) {
+    MultiplyOperation multiplyOperation = new MultiplyOperation();
+    currentContainer.push(multiplyOperation);
   }
 
   @Override
-  public void exitExpr(ExprContext ctx) {
+  public void exitMulExpr(MulExprContext ctx) {
+    MultiplyOperation multiplyOperation = (MultiplyOperation) currentContainer.pop();
+    currentContainer.peek().addChild(multiplyOperation);
   }
+
+  @Override
+  public void enterAddExpr(AddExprContext ctx) {
+    AddOperation addOperation = new AddOperation();
+    currentContainer.push(addOperation);
+  }
+
+  @Override
+  public void exitAddExpr(AddExprContext ctx) {
+    AddOperation addOperation = (AddOperation) currentContainer.pop();
+    currentContainer.peek().addChild(addOperation);
+  }
+
+  @Override
+  public void enterSubtrExpr(SubtrExprContext ctx) {
+    AddOperation subtractOperation = new AddOperation();
+    currentContainer.push(subtractOperation);
+  }
+
+  @Override
+  public void exitSubtrExpr(SubtrExprContext ctx) {
+    SubtractOperation subtractOperation = (SubtractOperation) currentContainer.pop();
+    currentContainer.peek().addChild(subtractOperation);
+  }
+
 
   @Override
   public void enterPixelLiteral(PixelLiteralContext ctx) {

@@ -48,8 +48,18 @@ stylerule: selector OPEN_BRACE declaration* CLOSE_BRACE;
 selector: (CLASS_IDENT | ID_IDENT | LOWER_IDENT);
 declaration: property COLON expr SEMICOLON;
 property: ('background-color' | 'width' | 'height' | 'color');
-expr: literal ((PLUS | MIN | MUL) literal)*;
-literal: COLOR #colorLiteral
+//expr: literal ((PLUS | MIN | MUL) literal)*;
+expr
+  : expr MUL expr              #mulExpr
+  | expr PLUS expr             #addExpr
+  | expr MIN expr              #subtrExpr
+  | literal                    #literalExpr
+  ;
+
+
+
+literal:
+    COLOR #colorLiteral
   | PIXELSIZE #pixelLiteral
   | PERCENTAGE # percentageLiteral
   | TRUE #boolLiteral
