@@ -1,25 +1,30 @@
 package nl.han.ica.icss.parser;
 
-import com.google.errorprone.annotations.Var;
 import java.util.Stack;
 import nl.han.ica.icss.ast.AST;
 import nl.han.ica.icss.ast.ASTNode;
 import nl.han.ica.icss.ast.Declaration;
-import nl.han.ica.icss.ast.Literal;
 import nl.han.ica.icss.ast.PropertyName;
 import nl.han.ica.icss.ast.Stylerule;
 import nl.han.ica.icss.ast.Stylesheet;
 import nl.han.ica.icss.ast.VariableAssignment;
+import nl.han.ica.icss.ast.literals.BoolLiteral;
+import nl.han.ica.icss.ast.literals.ColorLiteral;
+import nl.han.ica.icss.ast.literals.PixelLiteral;
+import nl.han.ica.icss.ast.literals.ScalarLiteral;
 import nl.han.ica.icss.ast.selectors.IdSelector;
+import nl.han.ica.icss.parser.ICSSParser.BoolLiteralContext;
+import nl.han.ica.icss.parser.ICSSParser.ColorLiteralContext;
 import nl.han.ica.icss.parser.ICSSParser.DeclarationContext;
 import nl.han.ica.icss.parser.ICSSParser.ExprContext;
-import nl.han.ica.icss.parser.ICSSParser.IdselectorContext;
-import nl.han.ica.icss.parser.ICSSParser.LiteralContext;
-import nl.han.ica.icss.parser.ICSSParser.MathexprContext;
+import nl.han.ica.icss.parser.ICSSParser.PercentageLiteralContext;
+import nl.han.ica.icss.parser.ICSSParser.PixelLiteralContext;
 import nl.han.ica.icss.parser.ICSSParser.PropertyContext;
-import nl.han.ica.icss.parser.ICSSParser.StatementContext;
+import nl.han.ica.icss.parser.ICSSParser.ScalarLiteralContext;
+import nl.han.ica.icss.parser.ICSSParser.SelectorContext;
 import nl.han.ica.icss.parser.ICSSParser.StyleruleContext;
 import nl.han.ica.icss.parser.ICSSParser.StylesheetContext;
+import nl.han.ica.icss.parser.ICSSParser.VarLiteralContext;
 import nl.han.ica.icss.parser.ICSSParser.VariableassignmentContext;
 
 /**
@@ -82,49 +87,20 @@ public class ASTListener extends ICSSBaseListener {
   }
 
   @Override
-  public void enterIdselector(IdselectorContext ctx) {
+  public void enterSelector(SelectorContext ctx) {
     IdSelector idSelector = new IdSelector(ctx.getText());
     currentContainer.push(idSelector);
   }
 
   @Override
-  public void exitIdselector(IdselectorContext ctx) {
+  public void exitSelector(SelectorContext ctx) {
     IdSelector idSelector = (IdSelector) currentContainer.pop();
     currentContainer.peek().addChild(idSelector);
   }
 
   @Override
-  public void enterProperty(PropertyContext ctx) {
-    PropertyName propertyName = new PropertyName(ctx.getText());
-    currentContainer.push(propertyName);
-  }
-
-  @Override
-  public void exitProperty(PropertyContext ctx) {
-  PropertyName propertyName = (PropertyName) currentContainer.pop();
-  currentContainer.peek().addChild(propertyName);
-  }
-
-  @Override
-  public void enterMathexpr(MathexprContext ctx) {
-
-  }
-
-  @Override
-  public void exitMathexpr(MathexprContext ctx) {
-  }
-
-  @Override
-  public void enterLiteral(LiteralContext ctx) {
-  }
-
-  @Override
-  public void exitLiteral(LiteralContext ctx) {
-  }
-
-  @Override
   public void enterDeclaration(DeclarationContext ctx) {
-    Declaration declaration = new Declaration();
+    Declaration declaration = new Declaration(ctx.getText());
     currentContainer.push(declaration);
   }
 
@@ -135,21 +111,86 @@ public class ASTListener extends ICSSBaseListener {
   }
 
   @Override
-  public void enterStatement(StatementContext ctx) {
+  public void enterProperty(PropertyContext ctx) {
+    PropertyName propertyName = new PropertyName(ctx.getText());
+    currentContainer.push(propertyName);
   }
 
   @Override
-  public void exitStatement(StatementContext ctx) {
-
+  public void exitProperty(PropertyContext ctx) {
+    PropertyName propertyName = (PropertyName) currentContainer.pop();
+    currentContainer.peek().addChild(propertyName);
   }
 
   @Override
   public void enterExpr(ExprContext ctx) {
-
   }
 
   @Override
   public void exitExpr(ExprContext ctx) {
   }
 
+  @Override
+  public void enterPixelLiteral(PixelLiteralContext ctx) {
+    PixelLiteral pixelLiteral = new PixelLiteral(ctx.getText());
+    currentContainer.push(pixelLiteral);
+  }
+
+  @Override
+  public void exitPixelLiteral(PixelLiteralContext ctx) {
+    PixelLiteral pixelLiteral = (PixelLiteral) currentContainer.pop();
+    currentContainer.peek().addChild(pixelLiteral);
+  }
+
+  @Override
+  public void enterColorLiteral(ColorLiteralContext ctx) {
+    ColorLiteral colorLiteral = new ColorLiteral(ctx.getText());
+    currentContainer.push(colorLiteral);
+  }
+
+  @Override
+  public void exitColorLiteral(ColorLiteralContext ctx) {
+    ColorLiteral colorLiteral = (ColorLiteral) currentContainer.pop();
+    currentContainer.peek().addChild(colorLiteral);
+  }
+
+  @Override
+  public void enterScalarLiteral(ScalarLiteralContext ctx) {
+    ScalarLiteral scalarLiteral = new ScalarLiteral(ctx.getText());
+    currentContainer.push(scalarLiteral);
+  }
+
+  @Override
+  public void enterBoolLiteral(BoolLiteralContext ctx) {
+    BoolLiteral boolLiteral = new BoolLiteral(ctx.getText());
+    currentContainer.push(boolLiteral);
+  }
+
+  @Override
+  public void exitBoolLiteral(BoolLiteralContext ctx) {
+    BoolLiteral boolLiteral = (BoolLiteral) currentContainer.pop();
+    currentContainer.peek().addChild(boolLiteral);
+  }
+
+  @Override
+  public void enterPercentageLiteral(PercentageLiteralContext ctx) {
+    ScalarLiteral scalarLiteral = new ScalarLiteral(ctx.getText());
+    currentContainer.push(scalarLiteral);
+  }
+
+  @Override
+  public void exitPercentageLiteral(PercentageLiteralContext ctx) {
+    ScalarLiteral scalarLiteral = (ScalarLiteral) currentContainer.pop();
+    currentContainer.peek().addChild(scalarLiteral);
+  }
+
+  @Override
+  public void enterVarLiteral(VarLiteralContext ctx) {
+  }
+
+  @Override
+  public void exitVarLiteral(VarLiteralContext ctx) {
+  }
 }
+
+

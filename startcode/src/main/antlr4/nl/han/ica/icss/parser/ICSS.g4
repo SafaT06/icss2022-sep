@@ -44,16 +44,19 @@ ASSIGNMENT_OPERATOR: ':=';
 //--- PARSER: ---
 stylesheet: variableassignment* stylerule* EOF;
 variableassignment: CAPITAL_IDENT ASSIGNMENT_OPERATOR expr SEMICOLON;
-expr: mathexpr | literal;
-stylerule: idselector OPEN_BRACE property* CLOSE_BRACE;
-idselector: (CLASS_IDENT | ID_IDENT | LOWER_IDENT);
-statement: declaration;
-declaration: property COLON literal SEMICOLON;
-property: ('background-color' COLON literal SEMICOLON
-      | 'width' COLON mathexpr SEMICOLON
-      | 'color' COLON mathexpr SEMICOLON);
-mathexpr: literal ((PLUS | MIN | MUL) literal)*;
-literal: COLOR | PIXELSIZE | PERCENTAGE | CAPITAL_IDENT | TRUE | FALSE | SCALAR;
+stylerule: selector OPEN_BRACE declaration* CLOSE_BRACE;
+selector: (CLASS_IDENT | ID_IDENT | LOWER_IDENT);
+declaration: property COLON expr SEMICOLON;
+property: ('background-color' | 'width' | 'height' | 'color');
+expr: literal ((PLUS | MIN | MUL) literal)*;
+literal: COLOR #colorLiteral
+  | PIXELSIZE #pixelLiteral
+  | PERCENTAGE # percentageLiteral
+  | TRUE #boolLiteral
+  | FALSE #boolLiteral
+  | SCALAR #scalarLiteral
+  | CAPITAL_IDENT #varLiteral
+  ;
 
 
 

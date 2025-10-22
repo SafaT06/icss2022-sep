@@ -7,9 +7,11 @@ import nl.han.ica.datastructures.IHANLinkedList;
 import nl.han.ica.icss.ast.AST;
 import nl.han.ica.icss.ast.ASTNode;
 import nl.han.ica.icss.ast.Declaration;
+import nl.han.ica.icss.ast.PropertyName;
 import nl.han.ica.icss.ast.Stylerule;
 import nl.han.ica.icss.ast.Stylesheet;
 import nl.han.ica.icss.ast.literals.ColorLiteral;
+import nl.han.ica.icss.ast.literals.PixelLiteral;
 import nl.han.ica.icss.ast.types.ExpressionType;
 
 
@@ -43,6 +45,12 @@ public class Checker {
         declaration.setError("Width can't be a color");
       }
     }
+    if(declaration.property.name.equals("color")) {
+      if (declaration.expression instanceof PixelLiteral) {
+        declaration.setError("Color can't be a pixel");
+      }
+    }
+
   }
 
 
