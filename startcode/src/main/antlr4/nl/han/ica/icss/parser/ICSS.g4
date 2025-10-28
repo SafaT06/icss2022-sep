@@ -46,17 +46,22 @@ stylesheet: variableassignment* stylerule* EOF;
 variableassignment: CAPITAL_IDENT ASSIGNMENT_OPERATOR expr SEMICOLON;
 stylerule: selector OPEN_BRACE declaration* CLOSE_BRACE;
 selector: (CLASS_IDENT | ID_IDENT | LOWER_IDENT);
-declaration: property COLON expr SEMICOLON;
-property: ('background-color' | 'width' | 'height' | 'color');
-//expr: literal ((PLUS | MIN | MUL) literal)*;
+declaration: property COLON expr SEMICOLON
+             | ifState
+             ;
+ifState: IF BOX_BRACKET_OPEN expr BOX_BRACKET_CLOSE OPEN_BRACE (declaration* | variableassignment ) CLOSE_BRACE
+         elseState?; // optional
+
+elseState : ELSE OPEN_BRACE (declaration* | variableassignment) CLOSE_BRACE;
+
+property: ('background-color' | 'width' | 'height' | 'color'); // lowerindent misschien
+
 expr
   : expr MUL expr              #mulExpr
   | expr PLUS expr             #addExpr
   | expr MIN expr              #subtrExpr
   | literal                    #literalExpr
   ;
-
-
 
 literal:
     COLOR #colorLiteral
@@ -67,7 +72,6 @@ literal:
   | SCALAR #scalarLiteral
   | CAPITAL_IDENT #variableReference
   ;
-
 
 
 

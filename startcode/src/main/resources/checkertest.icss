@@ -1,0 +1,73 @@
+p {
+    width: UndefinedVariable;
+    color: AnotherUndefinedVar;
+}
+
+InvalidColor := #ff0000;
+InvalidPixel := 100px;
+InvalidPercent := 50%;
+
+#test1 {
+    width: 100px + 50%;
+    height: 30% - 20px;
+    background-color: 2px * 3px;
+}
+
+TestColor := #00ff00;
+
+#test2 {
+    width: TestColor + 10px;
+    height: TestColor - 20px;
+    background-color: TestColor * 2;
+    color: #ffffff + #000000;
+}
+
+WrongWidth := #ff0000;
+WrongColor := 100px;
+
+#test3 {
+    width: #ff0000;
+    height: #00ff00;
+    color: 12px;
+    background-color: 500px;
+    width: WrongWidth;
+    color: WrongColor;
+}
+
+TestPixel := 100px;
+TestNumber := 5;
+
+#test4 {
+    if[100px] {
+        width: 100px;
+    }
+    if[TestPixel] {
+        height: 50px;
+    }
+    if[#ff0000] {
+        color: #000000;
+    }
+    if[TestNumber] {
+        background-color: #ffffff;
+    }
+}
+
+ScopeTest := 10px;
+
+#test5 {
+    if[TRUE] {
+        InnerVariable := 20px;
+        width: InnerVariable;
+    }
+    height: InnerVariable;
+}
+
+#test6 {
+    width: NonExistent + 50%;
+    color: #ff0000 * 2px;
+    background-color: 100px;
+    if[50px] {
+        height: UndefinedVar;
+        width: #00ff00;
+    }
+}

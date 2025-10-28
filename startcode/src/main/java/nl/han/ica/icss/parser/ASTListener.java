@@ -4,6 +4,8 @@ import java.util.Stack;
 import nl.han.ica.icss.ast.AST;
 import nl.han.ica.icss.ast.ASTNode;
 import nl.han.ica.icss.ast.Declaration;
+import nl.han.ica.icss.ast.ElseClause;
+import nl.han.ica.icss.ast.IfClause;
 import nl.han.ica.icss.ast.PropertyName;
 import nl.han.ica.icss.ast.Stylerule;
 import nl.han.ica.icss.ast.Stylesheet;
@@ -11,6 +13,7 @@ import nl.han.ica.icss.ast.VariableAssignment;
 import nl.han.ica.icss.ast.VariableReference;
 import nl.han.ica.icss.ast.literals.BoolLiteral;
 import nl.han.ica.icss.ast.literals.ColorLiteral;
+import nl.han.ica.icss.ast.literals.PercentageLiteral;
 import nl.han.ica.icss.ast.literals.PixelLiteral;
 import nl.han.ica.icss.ast.literals.ScalarLiteral;
 import nl.han.ica.icss.ast.operations.AddOperation;
@@ -21,6 +24,9 @@ import nl.han.ica.icss.parser.ICSSParser.AddExprContext;
 import nl.han.ica.icss.parser.ICSSParser.BoolLiteralContext;
 import nl.han.ica.icss.parser.ICSSParser.ColorLiteralContext;
 import nl.han.ica.icss.parser.ICSSParser.DeclarationContext;
+import nl.han.ica.icss.parser.ICSSParser.ElseStateContext;
+import nl.han.ica.icss.parser.ICSSParser.IfStateContext;
+import nl.han.ica.icss.parser.ICSSParser.LiteralExprContext;
 import nl.han.ica.icss.parser.ICSSParser.MulExprContext;
 import nl.han.ica.icss.parser.ICSSParser.PercentageLiteralContext;
 import nl.han.ica.icss.parser.ICSSParser.PixelLiteralContext;
@@ -157,7 +163,7 @@ public class ASTListener extends ICSSBaseListener {
 
   @Override
   public void enterSubtrExpr(SubtrExprContext ctx) {
-    AddOperation subtractOperation = new AddOperation();
+    SubtractOperation subtractOperation = new SubtractOperation();
     currentContainer.push(subtractOperation);
   }
 
@@ -218,15 +224,16 @@ public class ASTListener extends ICSSBaseListener {
 
   @Override
   public void enterPercentageLiteral(PercentageLiteralContext ctx) {
-    ScalarLiteral scalarLiteral = new ScalarLiteral(ctx.getText());
-    currentContainer.push(scalarLiteral);
+    PercentageLiteral percentageLiteral = new PercentageLiteral(ctx.getText());
+    currentContainer.push(percentageLiteral);
   }
 
   @Override
   public void exitPercentageLiteral(PercentageLiteralContext ctx) {
-    ScalarLiteral scalarLiteral = (ScalarLiteral) currentContainer.pop();
-    currentContainer.peek().addChild(scalarLiteral);
+    PercentageLiteral percentageLiteral = (PercentageLiteral) currentContainer.pop();
+    currentContainer.peek().addChild(percentageLiteral);
   }
+
 
   @Override
   public void enterVariableReference(VariableReferenceContext ctx) {
@@ -239,6 +246,40 @@ public class ASTListener extends ICSSBaseListener {
     VariableReference variableReference = (VariableReference) currentContainer.pop();
     currentContainer.peek().addChild(variableReference);
   }
+
+  @Override
+  public void enterIfState(IfStateContext ctx) {
+    IfClause ifClause = new IfClause();
+    currentContainer.push(ifClause);
+  }
+
+  @Override
+  public void exitIfState(IfStateContext ctx) {
+    IfClause ifClause = (IfClause) currentContainer.pop();
+    currentContainer.peek().addChild(ifClause);
+  }
+
+  @Override
+  public void enterElseState(ElseStateContext ctx) {
+    ElseClause elseClause = new ElseClause();
+    currentContainer.push(elseClause);
+  }
+
+  @Override
+  public void exitElseState(ElseStateContext ctx) {
+    ElseClause elseClause = (ElseClause) currentContainer.pop();
+    currentContainer.peek().addChild(elseClause);
+  }
+
+  @Override
+  public void enterLiteralExpr(LiteralExprContext ctx) {
+  }
+
+  @Override
+  public void exitLiteralExpr(LiteralExprContext ctx) {
+  }
+
+
 }
 
 
