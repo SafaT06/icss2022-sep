@@ -25,6 +25,7 @@ import nl.han.ica.icss.parser.ICSSParser.BoolLiteralContext;
 import nl.han.ica.icss.parser.ICSSParser.ColorLiteralContext;
 import nl.han.ica.icss.parser.ICSSParser.DeclarationContext;
 import nl.han.ica.icss.parser.ICSSParser.ElseStateContext;
+import nl.han.ica.icss.parser.ICSSParser.IfBodyContext;
 import nl.han.ica.icss.parser.ICSSParser.IfStateContext;
 import nl.han.ica.icss.parser.ICSSParser.LiteralExprContext;
 import nl.han.ica.icss.parser.ICSSParser.MulExprContext;
@@ -33,6 +34,7 @@ import nl.han.ica.icss.parser.ICSSParser.PixelLiteralContext;
 import nl.han.ica.icss.parser.ICSSParser.PropertyContext;
 import nl.han.ica.icss.parser.ICSSParser.ScalarLiteralContext;
 import nl.han.ica.icss.parser.ICSSParser.SelectorContext;
+import nl.han.ica.icss.parser.ICSSParser.StyleruleBodyContext;
 import nl.han.ica.icss.parser.ICSSParser.StyleruleContext;
 import nl.han.ica.icss.parser.ICSSParser.StylesheetContext;
 import nl.han.ica.icss.parser.ICSSParser.SubtrExprContext;
@@ -123,6 +125,23 @@ public class ASTListener extends ICSSBaseListener {
   public void exitDeclaration(DeclarationContext ctx) {
     Declaration declaration = (Declaration) currentContainer.pop();
     currentContainer.peek().addChild(declaration);
+  }
+
+  @Override
+  public void enterIfBody(IfBodyContext ctx) {
+  }
+
+  @Override
+  public void exitIfBody(IfBodyContext ctx) {
+  }
+
+  @Override
+  public void enterStyleruleBody(StyleruleBodyContext ctx) {
+
+  }
+
+  @Override
+  public void exitStyleruleBody(StyleruleBodyContext ctx) {
   }
 
   @Override

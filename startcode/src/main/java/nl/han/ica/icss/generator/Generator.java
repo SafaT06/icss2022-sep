@@ -43,7 +43,7 @@ public class Generator {
       }
     }
 
-    css.append("}\n");
+    css.append("}\n\n");
     return css.toString();
   }
 
@@ -62,6 +62,7 @@ public class Generator {
     css.append(";\n");
     return css.toString();
   }
+
 
   private String generateSelector(Selector selector) {
     return selector.toString();

@@ -1,7 +1,7 @@
 package nl.han.ica.icss.transforms;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import nl.han.ica.icss.ast.AST;
 import nl.han.ica.icss.ast.ASTNode;
@@ -13,6 +13,7 @@ import nl.han.ica.icss.ast.Stylerule;
 import nl.han.ica.icss.ast.Stylesheet;
 import nl.han.ica.icss.ast.VariableAssignment;
 import nl.han.ica.icss.ast.VariableReference;
+import nl.han.ica.icss.ast.literals.BoolLiteral;
 import nl.han.ica.icss.ast.literals.PercentageLiteral;
 import nl.han.ica.icss.ast.literals.PixelLiteral;
 import nl.han.ica.icss.ast.literals.ScalarLiteral;
@@ -22,17 +23,14 @@ import nl.han.ica.icss.ast.operations.SubtractOperation;
 
 public class Evaluator implements Transform {
 
-  //  private IHANLinkedList<HashMap<String, Literal>> variableValues;
   private LinkedList<HashMap<String, Literal>> variableValues;
 
   public Evaluator() {
-//    variableValues = new HANLinkedList<>();
     variableValues = new LinkedList<>();
   }
 
   @Override
   public void apply(AST ast) {
-//    variableValues = new HANLinkedList<>();
     variableValues = new LinkedList<>();
     applyStylesheet(ast.root);
   }
@@ -58,22 +56,52 @@ public class Evaluator implements Transform {
     variableValues.peek().put(varAssignment.name.name, value);
   }
 
-
   private void applyStylerule(Stylerule node) {
+    ArrayList<ASTNode> toRemove = new ArrayList<>();
+
     for (ASTNode child : node.body) {
       if (child instanceof Declaration) {
         applyDeclartion((Declaration) child);
       } else if (child instanceof IfClause) {
         applyIfClause((IfClause) child);
+        toRemove.add(child);
       }
+    }
+
+    for (ASTNode child : toRemove) {
+      node.body.remove(child);
     }
   }
 
-
   private void applyIfClause(IfClause ifClause) {
+    Literal condition = evalExpression(ifClause.conditionalExpression);
 
+    if (condition instanceof BoolLiteral) {
+      boolean conditionValue = ((BoolLiteral) condition).value;
+
+      if (conditionValue) {
+        for (ASTNode child : ifClause.body) {
+          if (child instanceof Declaration) {
+            applyDeclartion((Declaration) child);
+          } else if (child instanceof VariableAssignment) {
+            applyVariableAssignment((VariableAssignment) child);
+          } else if (child instanceof IfClause) {
+            applyIfClause((IfClause) child);
+          }
+        }
+      } else if (ifClause.elseClause != null) {
+        for (ASTNode child : ifClause.elseClause.body) {
+          if (child instanceof Declaration) {
+            applyDeclartion((Declaration) child);
+          } else if (child instanceof VariableAssignment) {
+            applyVariableAssignment((VariableAssignment) child);
+          } else if (child instanceof IfClause) {
+            applyIfClause((IfClause) child);
+          }
+        }
+      }
+    }
   }
-
 
   private void applyDeclartion(Declaration node) {
     node.expression = evalExpression(node.expression);
@@ -95,10 +123,8 @@ public class Evaluator implements Transform {
     if (expression instanceof VariableReference) {
       return evalVariableReference((VariableReference) expression);
     }
-
     return null;
   }
-
 
   private Literal evalMultiplyOperation(MultiplyOperation multiOpp) {
     Literal left = evalExpression(multiOpp.lhs);
@@ -111,6 +137,10 @@ public class Evaluator implements Transform {
     if (left instanceof PixelLiteral && right instanceof ScalarLiteral) {
       int result = ((PixelLiteral) left).value * ((ScalarLiteral) right).value;
       return new PixelLiteral(result);
+    }
+    if (left instanceof ScalarLiteral && right instanceof ScalarLiteral) {
+      int result = ((ScalarLiteral) left).value * ((ScalarLiteral) right).value;
+      return new ScalarLiteral(result);
     }
     return null;
   }
@@ -145,7 +175,6 @@ public class Evaluator implements Transform {
     return null;
   }
 
-
   private Literal evalVariableReference(VariableReference var) {
     String name = var.name;
     for (HashMap<String, Literal> scope : variableValues) {
@@ -155,16 +184,4 @@ public class Evaluator implements Transform {
     }
     return null;
   }
-  // Push scope
-  private void pushScope() {
-    variableValues.push(new HashMap<>());
-  }
-
-  // Pop scope
-  private void popScope() {
-    variableValues.pop();
-  }
-
-
 }
-

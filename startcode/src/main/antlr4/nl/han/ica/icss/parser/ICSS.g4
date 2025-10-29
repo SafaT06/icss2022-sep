@@ -44,17 +44,21 @@ ASSIGNMENT_OPERATOR: ':=';
 //--- PARSER: ---
 stylesheet: variableassignment* stylerule* EOF;
 variableassignment: CAPITAL_IDENT ASSIGNMENT_OPERATOR expr SEMICOLON;
-stylerule: selector OPEN_BRACE declaration* CLOSE_BRACE;
+stylerule: selector OPEN_BRACE styleruleBody* CLOSE_BRACE;
 selector: (CLASS_IDENT | ID_IDENT | LOWER_IDENT);
-declaration: property COLON expr SEMICOLON
-             | ifState
-             ;
-ifState: IF BOX_BRACKET_OPEN expr BOX_BRACKET_CLOSE OPEN_BRACE (declaration* | variableassignment ) CLOSE_BRACE
-         elseState?; // optional
 
-elseState : ELSE OPEN_BRACE (declaration* | variableassignment) CLOSE_BRACE;
+styleruleBody: declaration | ifState;
 
-property: ('background-color' | 'width' | 'height' | 'color'); // lowerindent misschien
+declaration: property COLON expr SEMICOLON;
+
+ifState: IF BOX_BRACKET_OPEN expr BOX_BRACKET_CLOSE OPEN_BRACE ifBody* CLOSE_BRACE
+         elseState?;
+
+elseState: ELSE OPEN_BRACE ifBody* CLOSE_BRACE;
+
+ifBody: declaration | variableassignment | ifState;
+
+property: ('background-color' | 'width' | 'height' | 'color');
 
 expr
   : expr MUL expr              #mulExpr
@@ -66,13 +70,9 @@ expr
 literal:
     COLOR #colorLiteral
   | PIXELSIZE #pixelLiteral
-  | PERCENTAGE # percentageLiteral
+  | PERCENTAGE #percentageLiteral
   | TRUE #boolLiteral
   | FALSE #boolLiteral
   | SCALAR #scalarLiteral
   | CAPITAL_IDENT #variableReference
   ;
-
-
-
-

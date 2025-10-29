@@ -1,0 +1,57 @@
+UndefinedVar := NonExistent;
+
+TestPixel := 100px;
+TestPercent := 50%;
+WrongAdd := TestPixel + TestPercent;
+WrongSubtract := TestPercent - TestPixel;
+WrongMultiply := 2px * 3px;
+
+TestColor := #ff0000;
+ColorAdd := TestColor + 10px;
+ColorMultiply := TestColor * 2;
+
+WidthColor := #00ff00;
+ColorPixel := 100px;
+
+p {
+  width: #ff0000;
+  height: WidthColor;
+  color: 12px;
+  background-color: ColorPixel;
+  color: NonDeclaredColor;
+}
+
+a {
+  if[100px] { width: 200px; }
+  if[TestColor] { color: #000000; }
+  if[50] { height: 100px; }
+}
+
+#menu {
+  if[TRUE] {
+    InnerVar := 20px;
+    width: InnerVar;
+  }
+  height: InnerVar;
+}
+
+.other {
+  if[TRUE] {
+    ElseVar := 5px;
+  } else {
+    ElseVar := 10px;
+  }
+  width: ElseVar;
+}
+
+ValidWidth := 500px;
+ValidColor := #0000ff;
+ValidBool := TRUE;
+
+.menu {
+  width: ValidWidth;
+  color: ValidColor;
+  if[ValidBool] {
+    background-color: #ffffff;
+  }
+}
