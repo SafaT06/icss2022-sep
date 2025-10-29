@@ -1,73 +1,56 @@
-p {
-    width: UndefinedVariable;
-    color: AnotherUndefinedVar;
-}
-
-InvalidColor := #ff0000;
-InvalidPixel := 100px;
-InvalidPercent := 50%;
-
-#test1 {
-    width: 100px + 50%;
-    height: 30% - 20px;
-    background-color: 2px * 3px;
-}
-
-TestColor := #00ff00;
-
-#test2 {
-    width: TestColor + 10px;
-    height: TestColor - 20px;
-    background-color: TestColor * 2;
-    color: #ffffff + #000000;
-}
-
-WrongWidth := #ff0000;
-WrongColor := 100px;
-
-#test3 {
-    width: #ff0000;
-    height: #00ff00;
-    color: 12px;
-    background-color: 500px;
-    width: WrongWidth;
-    color: WrongColor;
-}
+UndefinedVar := NonExistent;
 
 TestPixel := 100px;
-TestNumber := 5;
+TestPercent := 50%;
+WrongAdd := TestPixel + TestPercent;
+WrongSubtract := TestPercent - TestPixel;
+WrongMultiply := TestPixel * TestPercent;
 
-#test4 {
+TestColor := #ff0000;
+ColorAdd := TestColor + 10px;
+ColorSubtract := TestColor - 5px;
+ColorMultiply := TestColor * 2;
+
+WidthColor := #00ff00;
+ColorPixel := 100px;
+
+p {
+    width: #ff0000;
+    height: #00ff00;
+    color: 100px;
+    background-color: 50px;
+}
+
+a {
     if[100px] {
-        width: 100px;
-    }
-    if[TestPixel] {
-        height: 50px;
+        width: 200px;
     }
     if[#ff0000] {
         color: #000000;
     }
-    if[TestNumber] {
-        background-color: #ffffff;
+    if[50] {
+        height: 100px;
     }
 }
 
 ScopeTest := 10px;
 
-#test5 {
+#menu {
     if[TRUE] {
-        InnerVariable := 20px;
-        width: InnerVariable;
+        InnerVar := 20px;
+        width: InnerVar;
     }
-    height: InnerVariable;
+    height: InnerVar;
 }
 
-#test6 {
-    width: NonExistent + 50%;
-    color: #ff0000 * 2px;
-    background-color: 100px;
-    if[50px] {
-        height: UndefinedVar;
-        width: #00ff00;
+ValidWidth := 500px;
+ValidColor := #0000ff;
+ValidBool := TRUE;
+
+.menu {
+    width: ValidWidth;
+    color: ValidColor;
+    if[ValidBool] {
+        background-color: #ffffff;
     }
 }

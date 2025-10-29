@@ -20,7 +20,6 @@ public class Generator {
     for (ASTNode child : node.getChildren()) {
       if (child instanceof Stylerule) {
         css.append(generateStylerule((Stylerule) child));
-        css.append("\n");
       }
     }
 
@@ -30,33 +29,41 @@ public class Generator {
   private String generateStylerule(Stylerule node) {
     StringBuilder css = new StringBuilder();
 
-    for (Selector selector : node.selectors) {
-      css.append(selector.toString());
+    for (int i = 0; i < node.selectors.size(); i++) {
+      css.append(generateSelector(node.selectors.get(i)));
+      if (i < node.selectors.size() - 1) {
+        css.append(", ");
+      }
     }
     css.append(" {\n");
 
     for (ASTNode child : node.body) {
       if (child instanceof Declaration) {
-        css.append(generateDeclaration((Declaration) child, 1));
+        css.append(generateDeclaration((Declaration) child));
       }
     }
+
     css.append("}\n");
     return css.toString();
   }
 
-  private String generateDeclaration(Declaration declaration, int indentLevel) {
+  private String generateDeclaration(Declaration declaration) {
     StringBuilder css = new StringBuilder();
 
-    css.append("  ".repeat(indentLevel));
-
+    css.append("  ");
     css.append(declaration.property.name);
     css.append(": ");
 
     if (declaration.expression instanceof Literal) {
-      css.append(((Literal) declaration.expression).toString());
+      Literal literal = (Literal) declaration.expression;
+      css.append(literal.toString());
     }
 
     css.append(";\n");
     return css.toString();
+  }
+
+  private String generateSelector(Selector selector) {
+    return selector.toString();
   }
 }

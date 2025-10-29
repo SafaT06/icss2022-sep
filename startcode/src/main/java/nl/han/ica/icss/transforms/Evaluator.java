@@ -1,6 +1,7 @@
 package nl.han.ica.icss.transforms;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import nl.han.ica.icss.ast.AST;
 import nl.han.ica.icss.ast.ASTNode;
@@ -145,8 +146,6 @@ public class Evaluator implements Transform {
   }
 
 
-
-
   private Literal evalVariableReference(VariableReference var) {
     String name = var.name;
     for (HashMap<String, Literal> scope : variableValues) {
@@ -156,6 +155,16 @@ public class Evaluator implements Transform {
     }
     return null;
   }
+  // Push scope
+  private void pushScope() {
+    variableValues.push(new HashMap<>());
+  }
+
+  // Pop scope
+  private void popScope() {
+    variableValues.pop();
+  }
+
 
 }
 
