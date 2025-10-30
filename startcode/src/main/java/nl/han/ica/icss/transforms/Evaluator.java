@@ -36,7 +36,7 @@ public class Evaluator implements Transform {
   }
 
   private void applyStylesheet(Stylesheet node) {
-    variableValues.push(new HashMap<>());
+    pushScope();
 
     for (ASTNode child : node.getChildren()) {
       if (child instanceof VariableAssignment) {
@@ -49,6 +49,7 @@ public class Evaluator implements Transform {
         applyStylerule((Stylerule) child);
       }
     }
+    popScope();
   }
 
   private void applyVariableAssignment(VariableAssignment varAssignment) {
@@ -57,50 +58,66 @@ public class Evaluator implements Transform {
   }
 
   private void applyStylerule(Stylerule node) {
-    ArrayList<ASTNode> toRemove = new ArrayList<>();
+    pushScope();
 
     for (ASTNode child : node.body) {
-      if (child instanceof Declaration) {
+      if (child instanceof VariableAssignment) {
+        applyVariableAssignment((VariableAssignment) child);
+      } else if (child instanceof Declaration) {
         applyDeclartion((Declaration) child);
       } else if (child instanceof IfClause) {
-        applyIfClause((IfClause) child);
-        toRemove.add(child);
+        ApplyIfClause((IfClause) child);
       }
     }
 
-    for (ASTNode child : toRemove) {
-      node.body.remove(child);
+    node.body = flattenBody(node.body);
+
+    popScope();
+  }
+
+  private void ApplyIfClause(IfClause ifClause) {
+    for (ASTNode child : ifClause.body) {
+      if (child instanceof VariableAssignment) {
+        applyVariableAssignment((VariableAssignment) child);
+      } else if (child instanceof Declaration) {
+        applyDeclartion((Declaration) child);
+      } else if (child instanceof IfClause) {
+        ApplyIfClause((IfClause) child);
+      }
+    }
+
+    if (ifClause.elseClause != null) {
+      for (ASTNode child : ifClause.elseClause.body) {
+        if (child instanceof VariableAssignment) {
+          applyVariableAssignment((VariableAssignment) child);
+        } else if (child instanceof Declaration) {
+          applyDeclartion((Declaration) child);
+        } else if (child instanceof IfClause) {
+          ApplyIfClause((IfClause) child);
+        }
+      }
     }
   }
 
-  private void applyIfClause(IfClause ifClause) {
-    Literal condition = evalExpression(ifClause.conditionalExpression);
+  private ArrayList<ASTNode> flattenBody(ArrayList<ASTNode> body) {
+    ArrayList<ASTNode> result = new ArrayList<>();
 
-    if (condition instanceof BoolLiteral) {
-      boolean conditionValue = ((BoolLiteral) condition).value;
+    for (ASTNode child : body) {
+      if (child instanceof IfClause) {
+        IfClause ifClause = (IfClause) child;
+        Literal condition = evalExpression(ifClause.conditionalExpression);
 
-      if (conditionValue) {
-        for (ASTNode child : ifClause.body) {
-          if (child instanceof Declaration) {
-            applyDeclartion((Declaration) child);
-          } else if (child instanceof VariableAssignment) {
-            applyVariableAssignment((VariableAssignment) child);
-          } else if (child instanceof IfClause) {
-            applyIfClause((IfClause) child);
-          }
+        if (condition instanceof BoolLiteral && ((BoolLiteral) condition).value) {
+          result.addAll(flattenBody(ifClause.body));
+        } else if (ifClause.elseClause != null) {
+          result.addAll(flattenBody(ifClause.elseClause.body));
         }
-      } else if (ifClause.elseClause != null) {
-        for (ASTNode child : ifClause.elseClause.body) {
-          if (child instanceof Declaration) {
-            applyDeclartion((Declaration) child);
-          } else if (child instanceof VariableAssignment) {
-            applyVariableAssignment((VariableAssignment) child);
-          } else if (child instanceof IfClause) {
-            applyIfClause((IfClause) child);
-          }
-        }
+      } else if (!(child instanceof VariableAssignment)) {
+        result.add(child);
       }
     }
+
+    return result;
   }
 
   private void applyDeclartion(Declaration node) {
@@ -131,16 +148,13 @@ public class Evaluator implements Transform {
     Literal right = evalExpression(multiOpp.rhs);
 
     if (left instanceof ScalarLiteral && right instanceof PixelLiteral) {
-      int result = ((ScalarLiteral) left).value * ((PixelLiteral) right).value;
-      return new PixelLiteral(result);
+      return new PixelLiteral(((ScalarLiteral) left).value * ((PixelLiteral) right).value);
     }
     if (left instanceof PixelLiteral && right instanceof ScalarLiteral) {
-      int result = ((PixelLiteral) left).value * ((ScalarLiteral) right).value;
-      return new PixelLiteral(result);
+      return new PixelLiteral(((PixelLiteral) left).value * ((ScalarLiteral) right).value);
     }
     if (left instanceof ScalarLiteral && right instanceof ScalarLiteral) {
-      int result = ((ScalarLiteral) left).value * ((ScalarLiteral) right).value;
-      return new ScalarLiteral(result);
+      return new ScalarLiteral(((ScalarLiteral) left).value * ((ScalarLiteral) right).value);
     }
     return null;
   }
@@ -150,12 +164,10 @@ public class Evaluator implements Transform {
     Literal right = evalExpression(addOpp.rhs);
 
     if (left instanceof PixelLiteral && right instanceof PixelLiteral) {
-      int result = ((PixelLiteral) left).value + ((PixelLiteral) right).value;
-      return new PixelLiteral(result);
+      return new PixelLiteral(((PixelLiteral) left).value + ((PixelLiteral) right).value);
     }
     if (left instanceof PercentageLiteral && right instanceof PercentageLiteral) {
-      int result = ((PercentageLiteral) left).value + ((PercentageLiteral) right).value;
-      return new PercentageLiteral(result);
+      return new PercentageLiteral(((PercentageLiteral) left).value + ((PercentageLiteral) right).value);
     }
     return null;
   }
@@ -165,23 +177,28 @@ public class Evaluator implements Transform {
     Literal right = evalExpression(subtrOpp.rhs);
 
     if (left instanceof PixelLiteral && right instanceof PixelLiteral) {
-      int result = ((PixelLiteral) left).value - ((PixelLiteral) right).value;
-      return new PixelLiteral(result);
+      return new PixelLiteral(((PixelLiteral) left).value - ((PixelLiteral) right).value);
     }
     if (left instanceof PercentageLiteral && right instanceof PercentageLiteral) {
-      int result = ((PercentageLiteral) left).value - ((PercentageLiteral) right).value;
-      return new PercentageLiteral(result);
+      return new PercentageLiteral(((PercentageLiteral) left).value - ((PercentageLiteral) right).value);
     }
     return null;
   }
 
   private Literal evalVariableReference(VariableReference var) {
-    String name = var.name;
     for (HashMap<String, Literal> scope : variableValues) {
-      if (scope.containsKey(name)) {
-        return scope.get(name);
+      if (scope.containsKey(var.name)) {
+        return scope.get(var.name);
       }
     }
     return null;
+  }
+
+  private void pushScope() {
+    variableValues.push(new HashMap<>());
+  }
+
+  private void popScope() {
+    variableValues.pop();
   }
 }

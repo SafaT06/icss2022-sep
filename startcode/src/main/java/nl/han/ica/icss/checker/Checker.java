@@ -22,18 +22,16 @@ import nl.han.ica.icss.ast.types.ExpressionType;
 
 public class Checker {
 
-
-  //  private IHANLinkedList<HashMap<String, ExpressionType>> variableTypes;
   private LinkedList<HashMap<String, ExpressionType>> variableTypes;
 
   public void check(AST ast) {
-    //    variableTypes = new HANLinkedList<>();
     variableTypes = new LinkedList<>();
-    variableTypes.push(new HashMap<>());
     checkStylesheet(ast.root);
   }
 
   private void checkStylesheet(Stylesheet sheet) {
+    pushScope();
+
     for (ASTNode child : sheet.getChildren()) {
       if (child instanceof VariableAssignment) {
         checkVariableAssignment((VariableAssignment) child);
@@ -45,14 +43,15 @@ public class Checker {
         checkStylerule((Stylerule) child);
       }
     }
+
+    popScope();
   }
 
-  private void checkVariableAssignment(VariableAssignment child) {
-    ExpressionType type = getExpressionType(child.expression);
-    if (type == null || type == ExpressionType.UNDEFINED) {
-      child.setError("Je bestaat niet ouwe");
-    } else {
-      variableTypes.peek().put(child.name.name, type);
+  private void checkVariableAssignment(VariableAssignment assignment) {
+    ExpressionType type = getExpressionType(assignment.expression);
+
+    if (type != ExpressionType.UNDEFINED) {
+      variableTypes.peek().put(assignment.name.name, type);
     }
   }
 
@@ -78,21 +77,23 @@ public class Checker {
         checkDeclaration((Declaration) child);
       } else if (child instanceof IfClause) {
         checkIfClause((IfClause) child);
+      } else if (child instanceof VariableAssignment) {
+        checkVariableAssignment((VariableAssignment) child);
       }
     }
 
-    // Else
     if (ifClause.elseClause != null) {
       for (ASTNode child : ifClause.elseClause.body) {
         if (child instanceof Declaration) {
           checkDeclaration((Declaration) child);
         } else if (child instanceof IfClause) {
           checkIfClause((IfClause) child);
+        } else if (child instanceof VariableAssignment) {
+          checkVariableAssignment((VariableAssignment) child);
         }
       }
     }
   }
-
 
   private void checkDeclaration(Declaration declaration) {
     if (declaration.property == null || declaration.expression == null) {
@@ -103,17 +104,18 @@ public class Checker {
     ExpressionType type = getExpressionType(declaration.expression);
 
     if (name.equals("width") || name.equals("height")) {
-      if (declaration.expression instanceof ColorLiteral) {
-        declaration.setError("Nee nee nee, geen kleuren voor width/height");
+      if (type != ExpressionType.PIXEL && type != ExpressionType.PERCENTAGE) {
+        declaration.setError("Nee nee nee, alleen px of % voor width/height");
       }
     }
 
     if (name.equals("color") || name.equals("background-color")) {
-      if (declaration.expression instanceof PixelLiteral) {
-        declaration.setError("Je doet weer iets doms, mag geen pixels voor kleuren gebruiken");
+      if (type != ExpressionType.COLOR) {
+        declaration.setError("Je doet weer iets doms, mag alleen kleuren hier");
       }
     }
   }
+
 
   private ExpressionType getExpressionType(Expression expr) {
     if (expr instanceof PixelLiteral) {
@@ -174,7 +176,11 @@ public class Checker {
     return left;
   }
 
+  private void pushScope() {
+    variableTypes.push(new HashMap<>());
+  }
 
-
-
+  private void popScope() {
+    variableTypes.pop();
+  }
 }
