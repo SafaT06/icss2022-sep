@@ -70,7 +70,7 @@ public class Evaluator implements Transform {
       }
     }
 
-    node.body = flattenBody(node.body);
+    node.body = RemoveIf(node.body);
 
     popScope();
   }
@@ -99,7 +99,7 @@ public class Evaluator implements Transform {
     }
   }
 
-  private ArrayList<ASTNode> flattenBody(ArrayList<ASTNode> body) {
+  private ArrayList<ASTNode> RemoveIf(ArrayList<ASTNode> body) {
     ArrayList<ASTNode> result = new ArrayList<>();
 
     for (ASTNode child : body) {
@@ -108,9 +108,9 @@ public class Evaluator implements Transform {
         Literal condition = evalExpression(ifClause.conditionalExpression);
 
         if (condition instanceof BoolLiteral && ((BoolLiteral) condition).value) {
-          result.addAll(flattenBody(ifClause.body));
+          result.addAll(RemoveIf(ifClause.body));
         } else if (ifClause.elseClause != null) {
-          result.addAll(flattenBody(ifClause.elseClause.body));
+          result.addAll(RemoveIf(ifClause.elseClause.body));
         }
       } else if (!(child instanceof VariableAssignment)) {
         result.add(child);

@@ -7,6 +7,7 @@ import nl.han.ica.icss.ast.Declaration;
 import nl.han.ica.icss.ast.ElseClause;
 import nl.han.ica.icss.ast.IfClause;
 import nl.han.ica.icss.ast.PropertyName;
+import nl.han.ica.icss.ast.Selector;
 import nl.han.ica.icss.ast.Stylerule;
 import nl.han.ica.icss.ast.Stylesheet;
 import nl.han.ica.icss.ast.VariableAssignment;
@@ -19,7 +20,9 @@ import nl.han.ica.icss.ast.literals.ScalarLiteral;
 import nl.han.ica.icss.ast.operations.AddOperation;
 import nl.han.ica.icss.ast.operations.MultiplyOperation;
 import nl.han.ica.icss.ast.operations.SubtractOperation;
+import nl.han.ica.icss.ast.selectors.ClassSelector;
 import nl.han.ica.icss.ast.selectors.IdSelector;
+import nl.han.ica.icss.ast.selectors.TagSelector;
 import nl.han.ica.icss.parser.ICSSParser.AddExprContext;
 import nl.han.ica.icss.parser.ICSSParser.BoolLiteralContext;
 import nl.han.ica.icss.parser.ICSSParser.ColorLiteralContext;
@@ -105,14 +108,23 @@ public class ASTListener extends ICSSBaseListener {
 
   @Override
   public void enterSelector(SelectorContext ctx) {
-    IdSelector idSelector = new IdSelector(ctx.getText());
-    currentContainer.push(idSelector);
+    Selector selector = null;
+
+    if (ctx.CLASS_IDENT() != null) {
+      selector = new ClassSelector(ctx.CLASS_IDENT().getText());
+    } else if (ctx.ID_IDENT() != null) {
+      selector = new IdSelector(ctx.ID_IDENT().getText());
+    } else if (ctx.LOWER_IDENT() != null) {
+      selector = new TagSelector(ctx.LOWER_IDENT().getText());
+    }
+
+    currentContainer.push(selector);
   }
 
   @Override
   public void exitSelector(SelectorContext ctx) {
-    IdSelector idSelector = (IdSelector) currentContainer.pop();
-    currentContainer.peek().addChild(idSelector);
+    Selector selector = (Selector) currentContainer.pop();
+    currentContainer.peek().addChild(selector);
   }
 
   @Override
