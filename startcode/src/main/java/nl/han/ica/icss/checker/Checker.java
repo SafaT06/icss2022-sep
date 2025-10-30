@@ -31,7 +31,6 @@ public class Checker {
 
   private void checkStylesheet(Stylesheet sheet) {
     pushScope();
-
     for (ASTNode child : sheet.getChildren()) {
       if (child instanceof VariableAssignment) {
         checkVariableAssignment((VariableAssignment) child);
@@ -56,6 +55,8 @@ public class Checker {
   }
 
   private void checkStylerule(Stylerule rule) {
+    pushScope();
+
     for (ASTNode child : rule.body) {
       if (child instanceof Declaration) {
         checkDeclaration((Declaration) child);
@@ -63,6 +64,7 @@ public class Checker {
         checkIfClause((IfClause) child);
       }
     }
+    popScope();
   }
 
   private void checkIfClause(IfClause ifClause) {
@@ -72,6 +74,7 @@ public class Checker {
       ifClause.setError("if state moet een boolean zijn");
     }
 
+    pushScope();
     for (ASTNode child : ifClause.body) {
       if (child instanceof Declaration) {
         checkDeclaration((Declaration) child);
@@ -81,8 +84,10 @@ public class Checker {
         checkVariableAssignment((VariableAssignment) child);
       }
     }
+    popScope();
 
     if (ifClause.elseClause != null) {
+      pushScope();
       for (ASTNode child : ifClause.elseClause.body) {
         if (child instanceof Declaration) {
           checkDeclaration((Declaration) child);
@@ -92,6 +97,7 @@ public class Checker {
           checkVariableAssignment((VariableAssignment) child);
         }
       }
+      popScope();
     }
   }
 
